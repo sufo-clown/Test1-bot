@@ -13,7 +13,7 @@ from telegram.ext import (
     filters,
 )
 
-TOKEN = os.getenv("8771937001:AAEr41o0QqlndZUr1mBv0QLmgVRTXrrUMRY")
+TOKEN = os.getenv("BOT_TOKEN")
 DB_NAME = "users.db"
 
 NAME, USERNAME, AGE, PHONE, CONFIRM = range(5)
