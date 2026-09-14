@@ -2,7 +2,7 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
 
 # Replace with your bot token from BotFather
-BOT_TOKEN = "YOUR_BOT_TOKEN_HERE"
+BOT_TOKEN = "8771937001:AAEr41o0QqlndZUr1mBv0QLmgVRTXrrUMRY"
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Send a message with inline buttons when /start is issued."""
