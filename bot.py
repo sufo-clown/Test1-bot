@@ -427,52 +427,69 @@ async def ai_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat = context.user_data.get("ai_chat")
 
     if chat is None:
-
         return
 
     question = update.message.text
 
-    try:
+    # Tell user we're working
+    thinking_message = await update.message.reply_text(
+        "🤔 Thinking..."
+    )
 
-        # Send user's message to Gemini
-        response = chat.send_message(
-            message=question
-        )
+    # Retry several times if Gemini is temporarily unavailable
+    for attempt in range(4):
 
-        answer = response.text
+        try:
 
-        if not answer:
-
-            answer = "❌ I couldn't generate a response."
-
-        # Count messages
-        count = context.user_data.get(
-            "ai_history_count",
-            0
-        )
-
-        count += 1
-
-        context.user_data["ai_history_count"] = count
-
-        await update.message.reply_text(answer)
-
-        # Prevent unlimited conversation memory
-        if count >= MAX_HISTORY:
-
-            await update.message.reply_text(
-                "🧠 We've had a long conversation.\n\n"
-                "For better performance, use /clear to start "
-                "a fresh conversation."
+            response = chat.send_message(
+                message=question
             )
 
-    except Exception as e:
+            answer = response.text
 
-        print("Gemini error:", e)
+            if not answer:
+                answer = "❌ I couldn't generate a response."
 
-        await update.message.reply_text(
-            "❌ Sorry, I couldn't connect to the AI right now."
-        )
+            await thinking_message.edit_text(answer)
+
+            count = context.user_data.get(
+                "ai_history_count",
+                0
+            )
+
+            count += 1
+            context.user_data["ai_history_count"] = count
+
+            if count >= MAX_HISTORY:
+
+                await update.message.reply_text(
+                    "🧠 We've had a long conversation.\n\n"
+                    "Use /clear if you'd like to start fresh."
+                )
+
+            return
+
+        except Exception as e:
+
+            print(
+                f"Gemini attempt {attempt + 1} failed: {e}"
+            )
+
+            # Wait before trying again
+            if attempt < 3:
+
+                import asyncio
+
+                wait_time = 2 ** attempt
+
+                await asyncio.sleep(wait_time)
+
+            else:
+
+                await thinking_message.edit_text(
+                    "😕 Gemini is temporarily busy right now.\n\n"
+                    "Please try again in a little while."
+    )
 
 
 async def clear_ai(update: Update, context: ContextTypes.DEFAULT_TYPE):
